@@ -1,0 +1,20 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Davetli {
+  id              Int       @id @default(autoincrement())
+  kod             String    @unique
+  ad              String
+  soyad           String
+  il              String?
+  ilce            String?
+  email           String?
+  katilimVar      Boolean   @default(false)
+  katilimTarihi   DateTime?
+  olusturmaTarihi DateTime  @default(now())
+}
