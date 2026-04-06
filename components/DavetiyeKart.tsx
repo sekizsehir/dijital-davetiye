@@ -25,7 +25,7 @@ export default function DavetiyeKart({ ad, soyad }: DavetiyeKartProps) {
       <div
         className="absolute w-full text-center"
         style={{
-          top: '37%',
+          top: '40%',
           left: 0,
           right: 0,
           padding: '0 24px',
