@@ -14,10 +14,14 @@ const VARSAYILAN: Record<string, string> = {
 }
 
 export async function GET() {
-  const ayarlar = await prisma.ayar.findMany()
   const result = { ...VARSAYILAN }
-  for (const a of ayarlar) {
-    result[a.anahtar] = a.deger
+  try {
+    const ayarlar = await prisma.ayar.findMany()
+    for (const a of ayarlar) {
+      result[a.anahtar] = a.deger
+    }
+  } catch {
+    // Tablo henüz yoksa varsayılanları döndür
   }
   return NextResponse.json(result)
 }

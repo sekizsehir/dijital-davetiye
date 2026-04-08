@@ -26,20 +26,24 @@ export async function generateMetadata({ params }: Props) {
 export default async function DavetiyePage({ params }: Props) {
   const { kod } = await params
 
-  const [davetli, ayarlar] = await Promise.all([
-    prisma.davetli.findUnique({ where: { kod: kod.toUpperCase() } }),
-    prisma.ayar.findMany(),
-  ])
+  const davetli = await prisma.davetli.findUnique({
+    where: { kod: kod.toUpperCase() },
+  })
 
   if (!davetli) {
     notFound()
   }
 
   const overlayAyar: OverlayAyar = { ...VARSAYILAN_AYAR }
-  for (const a of ayarlar) {
-    if (a.anahtar in overlayAyar) {
-      overlayAyar[a.anahtar as keyof OverlayAyar] = a.deger
+  try {
+    const ayarlar = await prisma.ayar.findMany()
+    for (const a of ayarlar) {
+      if (a.anahtar in overlayAyar) {
+        overlayAyar[a.anahtar as keyof OverlayAyar] = a.deger
+      }
     }
+  } catch {
+    // ayar tablosu henüz oluşturulmamışsa varsayılanları kullan
   }
 
   return (

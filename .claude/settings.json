@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cmd //c \"taskkill /PID 10124 /F\")",
+      "Bash(curl -s http://localhost:3000 -o /dev/null -w \"%{http_code}\")",
+      "Bash(curl -s http://localhost:3000/davetiye/JCIGWY)",
+      "Bash(curl -s https://dulcet-maamoul-ca492d.netlify.app/davetiye/JCIGWY)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://dulcet-maamoul-ca492d.netlify.app/davetiye/JCIGWY)",
+      "Bash(curl -s http://localhost:3000/api/ayarlar)"
+    ]
+  }
+}
