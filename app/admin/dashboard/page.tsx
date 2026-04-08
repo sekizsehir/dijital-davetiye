@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import OverlayAyarModal from '@/components/OverlayAyarModal'
+import { OverlayAyar, VARSAYILAN_AYAR } from '@/components/DavetiyeKart'
 
 interface Davetli {
   id: number
@@ -25,6 +27,8 @@ export default function AdminDashboard() {
   const [importing, setImporting] = useState(false)
   const [importMesaj, setImportMesaj] = useState('')
   const [kopyalandi, setKopyalandi] = useState<number | null>(null)
+  const [ayarModalAcik, setAyarModalAcik] = useState(false)
+  const [overlayAyar, setOverlayAyar] = useState<OverlayAyar>(VARSAYILAN_AYAR)
   const fileRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
@@ -55,6 +59,15 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchDavetliler()
   }, [filtre, arama])
+
+  useEffect(() => {
+    fetch('/api/admin/settings')
+      .then(r => r.json())
+      .then(data => {
+        if (data && !data.error) setOverlayAyar({ ...VARSAYILAN_AYAR, ...data })
+      })
+      .catch(() => {})
+  }, [])
 
   async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -112,12 +125,20 @@ export default function AdminDashboard() {
             <h1 className="text-xl font-black tracking-wide">Admin Paneli</h1>
             <p className="text-red-200 text-sm">Türkiye Divanı Davetiye Sistemi</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg text-sm font-medium transition"
-          >
-            Çıkış Yap
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setAyarModalAcik(true)}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg text-sm font-medium transition"
+            >
+              ✏️ Yazı Ayarları
+            </button>
+            <button
+              onClick={handleLogout}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg text-sm font-medium transition"
+            >
+              Çıkış Yap
+            </button>
+          </div>
         </div>
       </div>
 
@@ -263,6 +284,13 @@ export default function AdminDashboard() {
           </code>
         </div>
       </div>
+
+      <OverlayAyarModal
+        open={ayarModalAcik}
+        onClose={() => setAyarModalAcik(false)}
+        mevcutAyar={overlayAyar}
+        onKaydet={(yeniAyar) => setOverlayAyar(yeniAyar)}
+      />
     </main>
   )
 }

@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
+import { VARSAYILAN_AYAR, OverlayAyar } from '@/components/DavetiyeKart'
 import DavetiyeSayfasi from './DavetiyeSayfasi'
 
 interface Props {
@@ -24,12 +25,21 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function DavetiyePage({ params }: Props) {
   const { kod } = await params
-  const davetli = await prisma.davetli.findUnique({
-    where: { kod: kod.toUpperCase() },
-  })
+
+  const [davetli, ayarlar] = await Promise.all([
+    prisma.davetli.findUnique({ where: { kod: kod.toUpperCase() } }),
+    prisma.ayar.findMany(),
+  ])
 
   if (!davetli) {
     notFound()
+  }
+
+  const overlayAyar: OverlayAyar = { ...VARSAYILAN_AYAR }
+  for (const a of ayarlar) {
+    if (a.anahtar in overlayAyar) {
+      overlayAyar[a.anahtar as keyof OverlayAyar] = a.deger
+    }
   }
 
   return (
@@ -38,6 +48,7 @@ export default async function DavetiyePage({ params }: Props) {
       ad={davetli.ad}
       soyad={davetli.soyad}
       katilimVar={davetli.katilimVar}
+      overlayAyar={overlayAyar}
     />
   )
 }

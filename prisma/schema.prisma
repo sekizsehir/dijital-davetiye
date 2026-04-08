@@ -6,6 +6,11 @@ datasource db {
   provider = "postgresql"
 }
 
+model Ayar {
+  anahtar String @id
+  deger   String
+}
+
 model Davetli {
   id              Int       @id @default(autoincrement())
   kod             String    @unique

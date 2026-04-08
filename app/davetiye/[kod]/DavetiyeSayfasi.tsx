@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import DavetiyeKart from '@/components/DavetiyeKart'
+import DavetiyeKart, { OverlayAyar } from '@/components/DavetiyeKart'
 import KatilimModal from '@/components/KatilimModal'
 
 interface Props {
@@ -9,9 +9,10 @@ interface Props {
   ad: string
   soyad: string
   katilimVar: boolean
+  overlayAyar: OverlayAyar
 }
 
-export default function DavetiyeSayfasi({ kod, ad, soyad, katilimVar: initialKatilim }: Props) {
+export default function DavetiyeSayfasi({ kod, ad, soyad, katilimVar: initialKatilim, overlayAyar }: Props) {
   const [modalOpen, setModalOpen] = useState(false)
   const [katilimVar, setKatilimVar] = useState(initialKatilim)
   const [indiriliyor, setIndiriliyor] = useState(false)
@@ -46,7 +47,7 @@ export default function DavetiyeSayfasi({ kod, ad, soyad, katilimVar: initialKat
       style={{ background: '#1a1a1a' }}
     >
       <div className="w-full max-w-md">
-        <DavetiyeKart ad={ad} soyad={soyad} />
+        <DavetiyeKart ad={ad} soyad={soyad} ayar={overlayAyar} />
 
         <div className="mt-6 space-y-3">
           {katilimVar ? (
