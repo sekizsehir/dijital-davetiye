@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { ad, soyad, il, ilce, email } = await request.json()
+    const { ad, soyad, il, ilce, email, telefon } = await request.json()
 
     if (!ad || !soyad) {
       return NextResponse.json({ error: 'Ad ve soyad zorunludur' }, { status: 400 })
@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
         il: il?.toUpperCase() || null,
         ilce: ilce?.toUpperCase() || null,
         email: email || null,
+        telefon: telefon || null,
       },
     })
 
@@ -48,7 +49,7 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    const { id, ad, soyad, il, ilce, email, katilimVar } = await request.json()
+    const { id, ad, soyad, il, ilce, email, telefon, katilimVar } = await request.json()
 
     if (!id || !ad || !soyad) {
       return NextResponse.json({ error: 'Id, ad ve soyad zorunludur' }, { status: 400 })
@@ -62,6 +63,7 @@ export async function PUT(request: NextRequest) {
         il: il?.toUpperCase() || null,
         ilce: ilce?.toUpperCase() || null,
         email: email || null,
+        telefon: telefon || null,
         katilimVar: Boolean(katilimVar),
       },
     })

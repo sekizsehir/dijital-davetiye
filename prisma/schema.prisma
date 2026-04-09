@@ -19,6 +19,7 @@ model Davetli {
   il              String?
   ilce            String?
   email           String?
+  telefon         String?
   katilimVar      Boolean   @default(false)
   katilimTarihi   DateTime?
   olusturmaTarihi DateTime  @default(now())

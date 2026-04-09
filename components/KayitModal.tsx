@@ -11,6 +11,7 @@ interface Davetli {
   il: string | null
   ilce: string | null
   email: string | null
+  telefon: string | null
   katilimVar: boolean
 }
 
@@ -27,6 +28,7 @@ export default function KayitModal({ open, onClose, onKaydet, duzenle }: Props) 
   const [il, setIl] = useState('')
   const [ilce, setIlce] = useState('')
   const [email, setEmail] = useState('')
+  const [telefon, setTelefon] = useState('')
   const [katilimVar, setKatilimVar] = useState(false)
   const [loading, setLoading] = useState(false)
   const [hata, setHata] = useState('')
@@ -40,6 +42,7 @@ export default function KayitModal({ open, onClose, onKaydet, duzenle }: Props) 
       setIl(duzenle.il || '')
       setIlce(duzenle.ilce || '')
       setEmail(duzenle.email || '')
+      setTelefon(duzenle.telefon || '')
       setKatilimVar(duzenle.katilimVar)
     } else {
       setAd('')
@@ -47,6 +50,7 @@ export default function KayitModal({ open, onClose, onKaydet, duzenle }: Props) 
       setIl('')
       setIlce('')
       setEmail('')
+      setTelefon('')
       setKatilimVar(false)
     }
     setHata('')
@@ -67,8 +71,8 @@ export default function KayitModal({ open, onClose, onKaydet, duzenle }: Props) 
       const url = '/api/admin/kayit'
       const method = yeniKayit ? 'POST' : 'PUT'
       const body = yeniKayit
-        ? { ad, soyad, il, ilce, email }
-        : { id: duzenle!.id, ad, soyad, il, ilce, email, katilimVar }
+        ? { ad, soyad, il, ilce, email, telefon }
+        : { id: duzenle!.id, ad, soyad, il, ilce, email, telefon, katilimVar }
 
       const res = await fetch(url, {
         method,
@@ -167,15 +171,27 @@ export default function KayitModal({ open, onClose, onKaydet, duzenle }: Props) 
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="ornek@mail.com"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="ornek@mail.com"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Telefon</label>
+              <input
+                type="tel"
+                value={telefon}
+                onChange={e => setTelefon(e.target.value)}
+                placeholder="05xx xxx xx xx"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
+              />
+            </div>
           </div>
 
           {/* Sadece düzenleme modunda katılım durumu göster */}

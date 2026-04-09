@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
     const ilIdx = headers.indexOf('il')
     const ilceIdx = headers.indexOf('ilce')
     const emailIdx = headers.indexOf('email')
+    const telefonIdx = headers.indexOf('telefon')
 
     if (adIdx === -1 || soyadIdx === -1) {
       return NextResponse.json({ error: 'CSV dosyasında "ad" ve "soyad" kolonları gerekli' }, { status: 400 })
@@ -67,6 +68,7 @@ export async function POST(request: NextRequest) {
             il: ilIdx !== -1 ? cols[ilIdx]?.toUpperCase() || null : null,
             ilce: ilceIdx !== -1 ? cols[ilceIdx]?.toUpperCase() || null : null,
             email: emailIdx !== -1 ? cols[emailIdx] || null : null,
+            telefon: telefonIdx !== -1 ? cols[telefonIdx] || null : null,
           },
         })
         eklendi++

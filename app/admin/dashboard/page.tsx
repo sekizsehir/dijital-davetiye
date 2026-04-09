@@ -14,6 +14,7 @@ interface Davetli {
   il: string | null
   ilce: string | null
   email: string | null
+  telefon: string | null
   katilimVar: boolean
   olusturmaTarihi: string
 }
@@ -139,6 +140,17 @@ export default function AdminDashboard() {
     navigator.clipboard.writeText(`${baseUrl}/davetiye/${kod}`)
     setKopyalandi(id)
     setTimeout(() => setKopyalandi(null), 2000)
+  }
+
+  function whatsappGonder(telefon: string, kod: string, adSoyad: string) {
+    // Türkiye numarası normalize et: 05xx → 905xx, +905xx → 905xx
+    let numara = telefon.replace(/\s|-|\(|\)/g, '')
+    if (numara.startsWith('+')) numara = numara.slice(1)
+    if (numara.startsWith('0')) numara = '90' + numara.slice(1)
+    if (!numara.startsWith('90')) numara = '90' + numara
+    const link = `${baseUrl}/davetiye/${kod}`
+    const mesaj = encodeURIComponent(`Sayın ${adSoyad}, kişisel dijital davetiyeniz hazır: ${link}`)
+    window.open(`https://web.whatsapp.com/send?phone=${numara}&text=${mesaj}`, '_blank')
   }
 
   // Renk şemaları
@@ -332,6 +344,19 @@ export default function AdminDashboard() {
                             }}>
                             Düzenle
                           </button>
+                          {d.telefon && (
+                            <button
+                              onClick={() => whatsappGonder(d.telefon!, d.kod, `${d.ad} ${d.soyad}`)}
+                              className="px-3 py-1 rounded-lg text-xs font-medium border transition"
+                              title={`WhatsApp: ${d.telefon}`}
+                              style={{
+                                color: '#16a34a',
+                                borderColor: dark ? '#14532d' : '#bbf7d0',
+                                background: dark ? '#052e16' : undefined,
+                              }}>
+                              WhatsApp
+                            </button>
+                          )}
                           <button onClick={() => setOnayModal({ tip: 'tek', id: d.id })}
                             className="px-3 py-1 rounded-lg text-xs font-medium border transition"
                             style={{
@@ -356,8 +381,8 @@ export default function AdminDashboard() {
           style={{ background: d ? '#0c1a2e' : '#eff6ff', borderColor: d ? '#1e3a5f' : '#bfdbfe' }}>
           <p className="text-sm font-medium mb-1" style={{ color: d ? '#60a5fa' : '#1d4ed8' }}>CSV İçe Aktarma Formatı:</p>
           <code className="text-xs" style={{ color: d ? '#93c5fd' : '#1d4ed8' }}>
-            ad,soyad,il,ilce,email<br />
-            ÖMER,ŞİRANLI,İSTANBUL,KAĞITHANE,omer@example.com
+            ad,soyad,il,ilce,email,telefon<br />
+            ÖMER,ŞİRANLI,İSTANBUL,KAĞITHANE,omer@example.com,05001234567
           </code>
         </div>
       </div>

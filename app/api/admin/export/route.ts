@@ -16,13 +16,14 @@ export async function GET(request: NextRequest) {
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
-  const headers = ['Ad', 'Soyad', 'İl', 'İlçe', 'Email', 'Katılım', 'Davetiye Linki', 'Oluşturma Tarihi']
+  const headers = ['Ad', 'Soyad', 'İl', 'İlçe', 'Email', 'Telefon', 'Katılım', 'Davetiye Linki', 'Oluşturma Tarihi']
   const rows = davetliler.map(d => [
     d.ad,
     d.soyad,
     d.il || '',
     d.ilce || '',
     d.email || '',
+    d.telefon || '',
     d.katilimVar ? 'Evet' : 'Hayır',
     `${baseUrl}/davetiye/${d.kod}`,
     new Date(d.olusturmaTarihi).toLocaleDateString('tr-TR'),
