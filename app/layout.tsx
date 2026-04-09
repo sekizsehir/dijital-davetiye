@@ -8,8 +8,8 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "Türkiye Divanı - Davetiye Sistemi",
-  description: "Saadet Partisi Türkiye Divanı Etkinliği Kişisel Davetiye Sistemi",
+  title: "Dijital Davetiye Sistemi",
+  description: "Kişiye Özel Dijital Davetiye Sistemi",
 };
 
 export default function RootLayout({

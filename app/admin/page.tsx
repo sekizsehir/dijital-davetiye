@@ -42,7 +42,7 @@ export default function AdminLogin() {
       <div className="bg-white rounded-2xl p-8 w-full max-w-sm shadow-2xl">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-black text-gray-800">Admin Paneli</h1>
-          <p className="text-gray-500 text-sm mt-1">Türkiye Divanı Davetiye Sistemi</p>
+          <p className="text-gray-500 text-sm mt-1">Dijital Davetiye Sistemi</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-4">

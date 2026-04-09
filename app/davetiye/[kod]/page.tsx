@@ -18,8 +18,8 @@ export async function generateMetadata({ params }: Props) {
   }
 
   return {
-    title: `${davetli.ad} ${davetli.soyad} - Türkiye Divanı Daveti`,
-    description: 'Saadet Partisi Türkiye Divanı etkinliğine davetlisiniz.',
+    title: `${davetli.ad} ${davetli.soyad} - Dijital Davetiye`,
+    description: 'Kişiye özel dijital davetiyeniz.',
   }
 }
 

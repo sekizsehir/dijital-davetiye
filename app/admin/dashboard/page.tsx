@@ -151,7 +151,7 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-xl font-black tracking-wide">Admin Paneli</h1>
-            <p className="text-red-200 text-sm">Türkiye Divanı Davetiye Sistemi</p>
+            <p className="text-red-200 text-sm">Dijital Davetiye Sistemi</p>
           </div>
           <div className="flex gap-2">
             <button onClick={() => setAyarModalAcik(true)}
