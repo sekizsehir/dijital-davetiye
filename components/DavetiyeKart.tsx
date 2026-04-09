@@ -35,7 +35,7 @@ export default function DavetiyeKart({ ad, soyad, ayar = VARSAYILAN_AYAR }: Dave
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/davetiye-template.jpg"
+        src="/dijital-davetiye.jpg"
         alt="Davetiye"
         className="w-full block"
         crossOrigin="anonymous"
