@@ -13,7 +13,7 @@ export interface OverlayAyar {
 export const VARSAYILAN_AYAR: OverlayAyar = {
   overlay_top: '40',
   overlay_left: '50',
-  overlay_color: '#ffffff',
+  overlay_color: '#000000',
   overlay_fontsize: '19',
   overlay_fontweight: '900',
   overlay_letterspacing: '0.05',
@@ -49,6 +49,8 @@ export default function DavetiyeKart({ ad, soyad, ayar = VARSAYILAN_AYAR }: Dave
           left: 0,
           right: 0,
           padding: '0 24px',
+          zIndex: 10,
+          pointerEvents: 'none',
         }}
       >
         <p
