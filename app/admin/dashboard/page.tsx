@@ -400,7 +400,6 @@ export default function AdminDashboard() {
       <OverlayAyarModal
         open={ayarModalAcik}
         onClose={() => setAyarModalAcik(false)}
-        mevcutAyar={overlayAyar}
         onKaydet={(yeniAyar) => setOverlayAyar(yeniAyar)}
       />
 

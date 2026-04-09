@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/db'
-import { VARSAYILAN_AYAR, OverlayAyar } from '@/components/DavetiyeKart'
 import DavetiyeSayfasi from './DavetiyeSayfasi'
 
 interface Props {
@@ -12,11 +11,7 @@ export async function generateMetadata({ params }: Props) {
   const davetli = await prisma.davetli.findUnique({
     where: { kod: kod.toUpperCase() },
   })
-
-  if (!davetli) {
-    return { title: 'Davetiye Bulunamadı' }
-  }
-
+  if (!davetli) return { title: 'Davetiye Bulunamadı' }
   return {
     title: `${davetli.ad} ${davetli.soyad} - Dijital Davetiye`,
     description: 'Kişiye özel dijital davetiyeniz.',
@@ -25,26 +20,10 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function DavetiyePage({ params }: Props) {
   const { kod } = await params
-
   const davetli = await prisma.davetli.findUnique({
     where: { kod: kod.toUpperCase() },
   })
-
-  if (!davetli) {
-    notFound()
-  }
-
-  const overlayAyar: OverlayAyar = { ...VARSAYILAN_AYAR }
-  try {
-    const ayarlar = await prisma.ayar.findMany()
-    for (const a of ayarlar) {
-      if (a.anahtar in overlayAyar) {
-        overlayAyar[a.anahtar as keyof OverlayAyar] = a.deger
-      }
-    }
-  } catch {
-    // ayar tablosu henüz oluşturulmamışsa varsayılanları kullan
-  }
+  if (!davetli) notFound()
 
   return (
     <DavetiyeSayfasi
@@ -52,7 +31,6 @@ export default async function DavetiyePage({ params }: Props) {
       ad={davetli.ad}
       soyad={davetli.soyad}
       katilimVar={davetli.katilimVar}
-      overlayAyar={overlayAyar}
     />
   )
 }
