@@ -29,6 +29,9 @@ export default function AdminDashboard() {
   const [kopyalandi, setKopyalandi] = useState<number | null>(null)
   const [ayarModalAcik, setAyarModalAcik] = useState(false)
   const [overlayAyar, setOverlayAyar] = useState<OverlayAyar>(VARSAYILAN_AYAR)
+  const [secili, setSecili] = useState<Set<number>>(new Set())
+  const [siliniyor, setSiliniyor] = useState(false)
+  const [onayModal, setOnayModal] = useState<{ tip: 'tek' | 'toplu'; id?: number; sayi?: number } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
@@ -39,12 +42,8 @@ export default function AdminDashboard() {
       const params = new URLSearchParams()
       if (filtre) params.set('filtre', filtre)
       if (arama) params.set('arama', arama)
-
       const res = await fetch(`/api/admin/davetliler?${params}`)
-      if (res.status === 401) {
-        router.push('/admin')
-        return
-      }
+      if (res.status === 401) { router.push('/admin'); return }
       const data = await res.json()
       setDavetliler(data.davetliler)
       setToplam(data.toplam)
@@ -56,52 +55,79 @@ export default function AdminDashboard() {
     }
   }
 
-  useEffect(() => {
-    fetchDavetliler()
-  }, [filtre, arama])
+  useEffect(() => { fetchDavetliler() }, [filtre, arama])
 
   useEffect(() => {
     fetch('/api/admin/settings')
       .then(r => r.json())
-      .then(data => {
-        if (data && !data.error) setOverlayAyar({ ...VARSAYILAN_AYAR, ...data })
-      })
+      .then(data => { if (data && !data.error) setOverlayAyar({ ...VARSAYILAN_AYAR, ...data }) })
       .catch(() => {})
   }, [])
+
+  // Seçim işlemleri
+  const tumSecili = davetliler.length > 0 && secili.size === davetliler.length
+
+  function toggleTum() {
+    if (tumSecili) {
+      setSecili(new Set())
+    } else {
+      setSecili(new Set(davetliler.map(d => d.id)))
+    }
+  }
+
+  function toggleSecim(id: number) {
+    setSecili(prev => {
+      const yeni = new Set(prev)
+      if (yeni.has(id)) yeni.delete(id)
+      else yeni.add(id)
+      return yeni
+    })
+  }
+
+  // Silme işlemleri
+  async function tekSil(id: number) {
+    setSiliniyor(true)
+    try {
+      const res = await fetch(`/api/admin/sil?id=${id}`, { method: 'DELETE' })
+      if (res.ok) {
+        setSecili(prev => { const yeni = new Set(prev); yeni.delete(id); return yeni })
+        await fetchDavetliler()
+      }
+    } catch (err) { console.error(err) }
+    finally { setSiliniyor(false); setOnayModal(null) }
+  }
+
+  async function topluSil() {
+    if (secili.size === 0) return
+    setSiliniyor(true)
+    try {
+      const res = await fetch('/api/admin/sil', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: Array.from(secili) }),
+      })
+      if (res.ok) {
+        setSecili(new Set())
+        await fetchDavetliler()
+      }
+    } catch (err) { console.error(err) }
+    finally { setSiliniyor(false); setOnayModal(null) }
+  }
 
   async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-
     setImporting(true)
     setImportMesaj('')
-
     try {
       const formData = new FormData()
       formData.append('file', file)
-
-      const res = await fetch('/api/admin/import', {
-        method: 'POST',
-        body: formData,
-      })
-
+      const res = await fetch('/api/admin/import', { method: 'POST', body: formData })
       const data = await res.json()
-      if (res.ok) {
-        setImportMesaj(`✓ ${data.mesaj}`)
-        fetchDavetliler()
-      } else {
-        setImportMesaj(`✗ ${data.error}`)
-      }
-    } catch {
-      setImportMesaj('✗ Import hatası')
-    } finally {
-      setImporting(false)
-      if (fileRef.current) fileRef.current.value = ''
-    }
-  }
-
-  async function handleExport() {
-    window.location.href = '/api/admin/export'
+      if (res.ok) { setImportMesaj(`✓ ${data.mesaj}`); fetchDavetliler() }
+      else setImportMesaj(`✗ ${data.error}`)
+    } catch { setImportMesaj('✗ Import hatası') }
+    finally { setImporting(false); if (fileRef.current) fileRef.current.value = '' }
   }
 
   async function handleLogout() {
@@ -110,8 +136,7 @@ export default function AdminDashboard() {
   }
 
   function kopyalaLink(kod: string, id: number) {
-    const link = `${baseUrl}/davetiye/${kod}`
-    navigator.clipboard.writeText(link)
+    navigator.clipboard.writeText(`${baseUrl}/davetiye/${kod}`)
     setKopyalandi(id)
     setTimeout(() => setKopyalandi(null), 2000)
   }
@@ -126,16 +151,12 @@ export default function AdminDashboard() {
             <p className="text-red-200 text-sm">Türkiye Divanı Davetiye Sistemi</p>
           </div>
           <div className="flex gap-2">
-            <button
-              onClick={() => setAyarModalAcik(true)}
-              className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg text-sm font-medium transition"
-            >
+            <button onClick={() => setAyarModalAcik(true)}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg text-sm font-medium transition">
               ✏️ Yazı Ayarları
             </button>
-            <button
-              onClick={handleLogout}
-              className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg text-sm font-medium transition"
-            >
+            <button onClick={handleLogout}
+              className="bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-2 rounded-lg text-sm font-medium transition">
               Çıkış Yap
             </button>
           </div>
@@ -165,56 +186,57 @@ export default function AdminDashboard() {
         <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex-1 min-w-48">
-              <input
-                type="text"
-                placeholder="Ad veya soyad ara..."
-                value={arama}
-                onChange={e => setArama(e.target.value)}
+              <input type="text" placeholder="Ad veya soyad ara..."
+                value={arama} onChange={e => setArama(e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-400"
               />
             </div>
-
-            <select
-              value={filtre}
-              onChange={e => setFiltre(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-400"
-            >
+            <select value={filtre} onChange={e => setFiltre(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-red-400">
               <option value="">Tümü</option>
               <option value="katildi">Katıldı</option>
               <option value="katilmadi">Katılmadı</option>
             </select>
-
-            <button
-              onClick={() => fileRef.current?.click()}
-              disabled={importing}
-              className="px-4 py-2 rounded-lg text-white text-sm font-medium transition"
-              style={{ background: '#6B21A8' }}
-            >
+            <button onClick={() => fileRef.current?.click()} disabled={importing}
+              className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+              style={{ background: '#6B21A8' }}>
               {importing ? 'Yükleniyor...' : 'CSV İçe Aktar'}
             </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={handleImport}
-            />
-
-            <button
-              onClick={handleExport}
-              className="px-4 py-2 rounded-lg text-white text-sm font-medium transition"
-              style={{ background: '#059669' }}
-            >
+            <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleImport} />
+            <button onClick={() => window.location.href = '/api/admin/export'}
+              className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+              style={{ background: '#059669' }}>
               CSV Dışa Aktar
             </button>
           </div>
-
           {importMesaj && (
             <p className={`mt-3 text-sm font-medium ${importMesaj.startsWith('✓') ? 'text-green-600' : 'text-red-600'}`}>
               {importMesaj}
             </p>
           )}
         </div>
+
+        {/* Toplu işlem çubuğu */}
+        {secili.size > 0 && (
+          <div className="bg-red-50 border border-red-200 rounded-xl px-5 py-3 flex items-center justify-between">
+            <span className="text-red-700 font-medium text-sm">
+              {secili.size} kayıt seçildi
+            </span>
+            <div className="flex gap-2">
+              <button onClick={() => setSecili(new Set())}
+                className="px-3 py-1.5 rounded-lg text-sm text-gray-600 border border-gray-300 bg-white hover:bg-gray-50">
+                Seçimi Kaldır
+              </button>
+              <button
+                onClick={() => setOnayModal({ tip: 'toplu', sayi: secili.size })}
+                disabled={siliniyor}
+                className="px-4 py-1.5 rounded-lg text-sm text-white font-medium"
+                style={{ background: '#DC2626' }}>
+                {secili.size} Kaydı Sil
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Tablo */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -227,45 +249,56 @@ export default function AdminDashboard() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50">
+                    <th className="px-4 py-3 w-10">
+                      <input type="checkbox" checked={tumSecili} onChange={toggleTum}
+                        className="w-4 h-4 rounded accent-red-600 cursor-pointer" />
+                    </th>
                     <th className="text-left px-4 py-3 font-semibold text-gray-600">Ad Soyad</th>
                     <th className="text-left px-4 py-3 font-semibold text-gray-600">İl / İlçe</th>
                     <th className="text-left px-4 py-3 font-semibold text-gray-600">Katılım</th>
                     <th className="text-left px-4 py-3 font-semibold text-gray-600">Kod</th>
-                    <th className="text-left px-4 py-3 font-semibold text-gray-600">İşlem</th>
+                    <th className="text-left px-4 py-3 font-semibold text-gray-600">İşlemler</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
                   {davetliler.map(d => (
-                    <tr key={d.id} className="hover:bg-gray-50 transition">
-                      <td className="px-4 py-3 font-medium text-gray-800">
-                        {d.ad} {d.soyad}
+                    <tr key={d.id}
+                      className="hover:bg-gray-50 transition"
+                      style={{ background: secili.has(d.id) ? '#fef2f2' : undefined }}>
+                      <td className="px-4 py-3">
+                        <input type="checkbox" checked={secili.has(d.id)} onChange={() => toggleSecim(d.id)}
+                          className="w-4 h-4 rounded accent-red-600 cursor-pointer" />
                       </td>
+                      <td className="px-4 py-3 font-medium text-gray-800">{d.ad} {d.soyad}</td>
                       <td className="px-4 py-3 text-gray-600">
-                        {d.il || '-'} {d.ilce ? `/ ${d.ilce}` : ''}
+                        {d.il || '-'}{d.ilce ? ` / ${d.ilce}` : ''}
                       </td>
                       <td className="px-4 py-3">
-                        <span
-                          className="px-2 py-1 rounded-full text-xs font-medium"
+                        <span className="px-2 py-1 rounded-full text-xs font-medium"
                           style={{
                             background: d.katilimVar ? '#dcfce7' : '#fef3c7',
                             color: d.katilimVar ? '#166534' : '#92400e',
-                          }}
-                        >
+                          }}>
                           {d.katilimVar ? 'Katılacak' : 'Bekliyor'}
                         </span>
                       </td>
                       <td className="px-4 py-3 font-mono text-gray-500 text-xs">{d.kod}</td>
                       <td className="px-4 py-3">
-                        <button
-                          onClick={() => kopyalaLink(d.kod, d.id)}
-                          className="px-3 py-1 rounded-lg text-xs font-medium transition"
-                          style={{
-                            background: kopyalandi === d.id ? '#dcfce7' : '#f3f4f6',
-                            color: kopyalandi === d.id ? '#166534' : '#374151',
-                          }}
-                        >
-                          {kopyalandi === d.id ? 'Kopyalandı!' : 'Link Kopyala'}
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => kopyalaLink(d.kod, d.id)}
+                            className="px-3 py-1 rounded-lg text-xs font-medium transition"
+                            style={{
+                              background: kopyalandi === d.id ? '#dcfce7' : '#f3f4f6',
+                              color: kopyalandi === d.id ? '#166534' : '#374151',
+                            }}>
+                            {kopyalandi === d.id ? 'Kopyalandı!' : 'Link Kopyala'}
+                          </button>
+                          <button
+                            onClick={() => setOnayModal({ tip: 'tek', id: d.id })}
+                            className="px-3 py-1 rounded-lg text-xs font-medium text-red-600 border border-red-200 hover:bg-red-50 transition">
+                            Sil
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -284,6 +317,40 @@ export default function AdminDashboard() {
           </code>
         </div>
       </div>
+
+      {/* Silme Onay Modalı */}
+      {onayModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.5)' }}>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <div className="text-center">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{ background: '#fef2f2' }}>
+                <span className="text-2xl">⚠️</span>
+              </div>
+              <h3 className="font-bold text-gray-800 text-lg mb-2">Silme Onayı</h3>
+              <p className="text-gray-500 text-sm mb-6">
+                {onayModal.tip === 'tek'
+                  ? 'Bu kaydı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.'
+                  : `Seçili ${onayModal.sayi} kaydı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setOnayModal(null)}
+                  className="flex-1 py-2.5 rounded-xl border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                  İptal
+                </button>
+                <button
+                  onClick={() => onayModal.tip === 'tek' ? tekSil(onayModal.id!) : topluSil()}
+                  disabled={siliniyor}
+                  className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white"
+                  style={{ background: '#DC2626', opacity: siliniyor ? 0.7 : 1 }}>
+                  {siliniyor ? 'Siliniyor...' : 'Evet, Sil'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <OverlayAyarModal
         open={ayarModalAcik}
