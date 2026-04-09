@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { cookies } from 'next/headers'
-import type { Davetli } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   const cookieStore = await cookies()
@@ -13,18 +12,29 @@ export async function GET(request: NextRequest) {
 
   const davetliler = await prisma.davetli.findMany({
     orderBy: { olusturmaTarihi: 'desc' },
+    select: {
+      ad: true,
+      soyad: true,
+      il: true,
+      ilce: true,
+      email: true,
+      telefon: true,
+      katilimVar: true,
+      kod: true,
+      olusturmaTarihi: true,
+    },
   })
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
   const headers = ['Ad', 'Soyad', 'İl', 'İlçe', 'Email', 'Telefon', 'Katılım', 'Davetiye Linki', 'Oluşturma Tarihi']
-  const rows = davetliler.map((d: Davetli) => [
+  const rows = davetliler.map(d => [
     d.ad,
     d.soyad,
-    d.il || '',
-    d.ilce || '',
-    d.email || '',
-    d.telefon || '',
+    d.il ?? '',
+    d.ilce ?? '',
+    d.email ?? '',
+    d.telefon ?? '',
     d.katilimVar ? 'Evet' : 'Hayır',
     `${baseUrl}/davetiye/${d.kod}`,
     new Date(d.olusturmaTarihi).toLocaleDateString('tr-TR'),
