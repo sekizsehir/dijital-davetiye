@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { cookies } from 'next/headers'
+import type { Davetli } from '@prisma/client'
 
 export async function GET(request: NextRequest) {
   const cookieStore = await cookies()
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
 
   const headers = ['Ad', 'Soyad', 'İl', 'İlçe', 'Email', 'Telefon', 'Katılım', 'Davetiye Linki', 'Oluşturma Tarihi']
-  const rows = davetliler.map(d => [
+  const rows = davetliler.map((d: Davetli) => [
     d.ad,
     d.soyad,
     d.il || '',
