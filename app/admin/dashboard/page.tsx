@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import OverlayAyarModal from '@/components/OverlayAyarModal'
 import { OverlayAyar, VARSAYILAN_AYAR } from '@/components/DavetiyeKart'
+import KayitModal from '@/components/KayitModal'
 
 interface Davetli {
   id: number
@@ -32,6 +33,8 @@ export default function AdminDashboard() {
   const [secili, setSecili] = useState<Set<number>>(new Set())
   const [siliniyor, setSiliniyor] = useState(false)
   const [onayModal, setOnayModal] = useState<{ tip: 'tek' | 'toplu'; id?: number; sayi?: number } | null>(null)
+  const [kayitModal, setKayitModal] = useState(false)
+  const [duzenleKayit, setDuzenleKayit] = useState<Davetli | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const router = useRouter()
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
@@ -197,6 +200,12 @@ export default function AdminDashboard() {
               <option value="katildi">Katıldı</option>
               <option value="katilmadi">Katılmadı</option>
             </select>
+            <button
+              onClick={() => { setDuzenleKayit(null); setKayitModal(true) }}
+              className="px-4 py-2 rounded-lg text-white text-sm font-medium"
+              style={{ background: '#CC0000' }}>
+              + Kayıt Oluştur
+            </button>
             <button onClick={() => fileRef.current?.click()} disabled={importing}
               className="px-4 py-2 rounded-lg text-white text-sm font-medium"
               style={{ background: '#6B21A8' }}>
@@ -294,6 +303,11 @@ export default function AdminDashboard() {
                             {kopyalandi === d.id ? 'Kopyalandı!' : 'Link Kopyala'}
                           </button>
                           <button
+                            onClick={() => { setDuzenleKayit(d); setKayitModal(true) }}
+                            className="px-3 py-1 rounded-lg text-xs font-medium text-blue-600 border border-blue-200 hover:bg-blue-50 transition">
+                            Düzenle
+                          </button>
+                          <button
                             onClick={() => setOnayModal({ tip: 'tek', id: d.id })}
                             className="px-3 py-1 rounded-lg text-xs font-medium text-red-600 border border-red-200 hover:bg-red-50 transition">
                             Sil
@@ -357,6 +371,13 @@ export default function AdminDashboard() {
         onClose={() => setAyarModalAcik(false)}
         mevcutAyar={overlayAyar}
         onKaydet={(yeniAyar) => setOverlayAyar(yeniAyar)}
+      />
+
+      <KayitModal
+        open={kayitModal}
+        onClose={() => { setKayitModal(false); setDuzenleKayit(null) }}
+        onKaydet={() => fetchDavetliler()}
+        duzenle={duzenleKayit}
       />
     </main>
   )
